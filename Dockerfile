@@ -1,12 +1,5 @@
-FROM node:20-alpine
-
-WORKDIR /public
-
-COPY package.json ./
-RUN npm install
-
-COPY . .
-
-EXPOSE 3000
-
-CMD ["node", "server.js"]
+node_modules/
+*.db
+.env
+.DS_Store
+npm-debug.log*

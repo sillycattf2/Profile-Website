@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Members</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#ECEAE4;
+    --paper-raised:#F5F3EE;
+    --ink:#1B2430;
+    --ink-soft:#5B6270;
+    --line:#C9C4B8;
+    --accent:#6B1E23;
+    --accent-soft:#8a3f44;
+    --brass:#B8932E;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+  }
+  #app{
+    max-width:520px;
+    margin:0 auto;
+    padding:48px 24px 110px;
+  }
+  h1,h2,h3{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    margin:0;
+  }
+  .eyebrow{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--accent);
+    margin-bottom:6px;
+    display:block;
+  }
+  .muted{color:var(--ink-soft);}
+  /* ticket / gate */
+  .ticket{
+    background:var(--paper-raised);
+    border:1px solid var(--line);
+    border-radius:4px;
+    position:relative;
+    overflow:hidden;
+    margin-top:28px;
+  }
+  .ticket::before{
+    content:"";
+    position:absolute;
+    left:0; right:0; top:138px;
+    border-top:1.5px dashed var(--line);
+  }
+  .ticket-perf{
+    position:absolute; left:-9px; top:130px;
+    width:18px; height:18px; border-radius:50%;
+    background:var(--paper);
+    box-shadow: 522px 0 0 var(--paper);
+  }
+  .ticket-head{padding:28px 28px 24px;}
+  .ticket-body{padding:24px 28px 28px;}
+  .tabs{display:flex; gap:4px; margin-top:18px;}
+  .tab{
+    flex:1; text-align:center; padding:10px 0;
+    font-family:'JetBrains Mono',monospace; font-size:12px;
+    letter-spacing:.06em; text-transform:uppercase;
+    border:1px solid var(--line); background:transparent;
+    cursor:pointer; color:var(--ink-soft);
+  }
+  .tab.active{background:var(--ink); color:var(--paper); border-color:var(--ink);}
+  label{
+    display:block; font-family:'JetBrains Mono',monospace; font-size:11px;
+    letter-spacing:.06em; text-transform:uppercase; color:var(--ink-soft);
+    margin:16px 0 6px;
+  }
+  label:first-child{margin-top:0;}
+  input[type=text], input[type=password], input[type=url], textarea{
+    width:100%; padding:11px 12px; font-family:'Inter',sans-serif; font-size:14px;
+    border:1px solid var(--line); background:var(--paper); color:var(--ink);
+    border-radius:2px;
+  }
+  input:disabled{opacity:.5;}
+  input:focus, textarea:focus, button:focus-visible{
+    outline:2px solid var(--accent); outline-offset:1px;
+  }
+  textarea{resize:vertical; min-height:70px;}
+  .invite-code-input{font-family:'JetBrains Mono',monospace; letter-spacing:.08em;}
+  button.primary{
+    width:100%; margin-top:22px; padding:13px 0;
+    background:var(--accent); color:var(--paper); border:none; border-radius:2px;
+    font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:.08em; text-transform:uppercase;
+    cursor:pointer; transition:background .15s;
+  }
+  button.primary:hover{background:var(--accent-soft);}
+  button.ghost{
+    width:100%; margin-top:10px; padding:11px 0;
+    background:transparent; color:var(--ink-soft); border:1px solid var(--line); border-radius:2px;
+    font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.06em; text-transform:uppercase;
+    cursor:pointer;
+  }
+  .error{
+    margin-top:14px; padding:10px 12px; font-size:13px;
+    background:rgba(107,30,35,.08); border-left:2px solid var(--accent); color:var(--accent);
+  }
+  .hint{font-size:11px; color:var(--ink-soft); margin-top:4px;}
+  /* header bar once logged in */
+  .topbar{
+    display:flex; justify-content:space-between; align-items:center;
+    padding-bottom:24px; margin-bottom:28px; border-bottom:1px solid var(--line);
+    flex-wrap:wrap; gap:12px;
+  }
+  .topbar .brand{font-family:'Fraunces',serif; font-size:18px; font-weight:600;}
+  .nav-links{display:flex; gap:18px; align-items:center;}
+  .nav-links a{
+    font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.06em; text-transform:uppercase;
+    color:var(--ink-soft); text-decoration:none; cursor:pointer;
+  }
+  .nav-links a:hover, .nav-links a.active{color:var(--accent);}
+  /* directory */
+  .member-row{
+    display:flex; align-items:center; gap:14px; padding:14px 0;
+    border-bottom:1px solid var(--line); cursor:pointer;
+  }
+  .member-row:hover .member-name{color:var(--accent);}
+  .avatar{
+    width:44px; height:44px; border-radius:50%; object-fit:cover;
+    background:var(--ink); flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Fraunces',serif; color:var(--paper); font-size:16px;
+  }
+  .member-name{font-family:'Fraunces',serif; font-size:16px; font-weight:500;}
+  .member-bio-preview{font-size:12px; color:var(--ink-soft); margin-top:2px; max-width:280px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  /* profile card */
+  .card{
+    background:var(--paper-raised); border:1px solid var(--line); border-radius:4px;
+    padding:32px 28px;
+  }
+  .card-avatar{
+    width:84px; height:84px; border-radius:50%; object-fit:cover;
+    background:var(--ink); margin-bottom:16px;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Fraunces',serif; color:var(--paper); font-size:30px;
+  }
+  .card h2{font-size:24px;}
+  .card .bio{margin-top:10px; font-size:14px; line-height:1.6; color:var(--ink-soft);}
+  .socials{display:flex; flex-wrap:wrap; gap:8px; margin-top:18px;}
+  .social-tag{
+    font-family:'JetBrains Mono',monospace; font-size:11px; padding:6px 10px;
+    border:1px solid var(--line); border-radius:20px; color:var(--ink); text-decoration:none;
+  }
+  .social-tag:hover{border-color:var(--accent); color:var(--accent);}
+  .divider{border-top:1px solid var(--line); margin:24px 0;}
+  /* track list */
+  .player-label{font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:10px; display:flex; justify-content:space-between;}
+  .track{
+    display:flex; align-items:center; gap:10px; padding:10px 0;
+    border-bottom:1px solid var(--line); cursor:pointer;
+  }
+  .track-num{font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--ink-soft); width:18px;}
+  .track-title{font-size:13px; flex:1;}
+  .track.playing .track-title{color:var(--accent); font-weight:600;}
+  .track-icon{font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--ink-soft); width:14px; text-align:center;}
+  .empty{font-size:13px; color:var(--ink-soft); font-style:italic; padding:6px 0;}
+  /* editor */
+  .row-group{display:flex; gap:8px; margin-top:8px; align-items:flex-start;}
+  .row-group input{flex:1;}
+  .row-remove{
+    background:transparent; border:1px solid var(--line); color:var(--ink-soft);
+    width:36px; min-height:42px; border-radius:2px; cursor:pointer; font-size:14px; flex-shrink:0;
+  }
+  .row-remove:hover{border-color:var(--accent); color:var(--accent);}
+  .add-link{
+    margin-top:10px; background:none; border:none; color:var(--accent);
+    font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.06em; text-transform:uppercase;
+    cursor:pointer; padding:0;
+  }
+  .back-link{
+    display:inline-block; margin-bottom:18px; font-family:'JetBrains Mono',monospace; font-size:11px;
+    letter-spacing:.06em; text-transform:uppercase; color:var(--ink-soft); cursor:pointer;
+  }
+  .back-link:hover{color:var(--accent);}
+  .saved-flash{
+    position:fixed; bottom:88px; left:50%; transform:translateX(-50%);
+    background:var(--ink); color:var(--paper); padding:10px 18px; border-radius:2px;
+    font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:.05em;
+    opacity:0; transition:opacity .2s; pointer-events:none; z-index:50;
+  }
+  .saved-flash.show{opacity:1;}
+  .you-badge{
+    font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--brass);
+    border:1px solid var(--brass); padding:2px 7px; border-radius:20px; margin-left:8px; vertical-align:middle;
+  }
+  ::placeholder{color:#9a9486;}
+  .upload-btn{
+    display:inline-block; font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.05em; text-transform:uppercase;
+    border:1px solid var(--line); padding:9px 12px; border-radius:2px; cursor:pointer; color:var(--ink); white-space:nowrap;
+  }
+  .upload-btn:hover{border-color:var(--accent); color:var(--accent);}
+  .avatar-edit-row{display:flex; gap:14px; align-items:flex-start;}
+  .avatar-edit-preview{width:56px; height:56px; border-radius:50%; object-fit:cover; background:var(--ink); flex-shrink:0; display:flex; align-items:center; justify-content:center; color:var(--paper); font-family:'Fraunces',serif;}
+  /* invites view */
+  .invite-card{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:14px 16px; border:1px solid var(--line); border-radius:3px; margin-top:10px;
+    background:var(--paper-raised);
+  }
+  .invite-code{font-family:'JetBrains Mono',monospace; font-size:14px; letter-spacing:.06em;}
+  .invite-status{font-family:'JetBrains Mono',monospace; font-size:10px; text-transform:uppercase; letter-spacing:.05em; padding:3px 8px; border-radius:20px;}
+  .invite-status.unused{color:var(--accent); border:1px solid var(--accent);}
+  .invite-status.used{color:var(--ink-soft); border:1px solid var(--line);}
+  .copy-btn{
+    background:none; border:none; color:var(--ink-soft); cursor:pointer; font-size:13px; margin-left:10px;
+  }
+  .copy-btn:hover{color:var(--accent);}
+  /* persistent player bar */
+  #player-bar{
+    position:fixed; left:0; right:0; bottom:0; height:0; overflow:hidden;
+    background:var(--ink); color:var(--paper); transition:height .2s ease; z-index:40;
+  }
+  #player-bar.active{height:68px;}
+  .player-progress{height:2px; width:100%; background:rgba(255,255,255,.12); position:relative;}
+  .player-progress-fill{height:100%; width:0%; background:var(--brass);}
+  .player-inner{display:flex; align-items:center; gap:14px; padding:0 20px; height:66px; max-width:520px; margin:0 auto;}
+  .player-meta{flex:1; min-width:0;}
+  .player-track-title{font-family:'Fraunces',serif; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .player-track-owner{font-family:'JetBrains Mono',monospace; font-size:10px; color:#a9adb6; text-transform:uppercase; letter-spacing:.05em; margin-top:2px;}
+  .player-controls{display:flex; align-items:center; gap:14px; flex-shrink:0;}
+  .player-btn{
+    background:none; border:none; color:var(--paper); cursor:pointer; font-size:16px; padding:4px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .player-btn.play-pause{
+    width:32px; height:32px; border-radius:50%; border:1.5px solid var(--brass); color:var(--brass); font-size:13px;
+  }
+  .player-btn:hover{color:var(--brass);}
+  .player-close{color:#7d8290; font-size:14px;}
+</style>
+</head>
+<body>
+<div id="app"><p class="muted" style="margin-top:60px;text-align:center;">Loading…</p></div>
+<div class="saved-flash" id="flash">Saved</div>
+
+<div id="player-bar">
+  <div class="player-progress"><div class="player-progress-fill" id="player-progress-fill"></div></div>
+  <div class="player-inner">
+    <div class="player-meta">
+      <div class="player-track-title" id="player-track-title">—</div>
+      <div class="player-track-owner" id="player-track-owner">—</div>
+    </div>
+    <div class="player-controls">
+      <button class="player-btn" id="player-prev" title="Previous">⏮</button>
+      <button class="player-btn play-pause" id="player-toggle" title="Play/Pause">▶</button>
+      <button class="player-btn" id="player-next" title="Next">⏭</button>
+      <button class="player-btn player-close" id="player-close" title="Close">✕</button>
+    </div>
+  </div>
+</div>
+<audio id="audio-el"></audio>
+
+<script>
+const API_URL = ''; // Same origin
+const AVATAR_MAX_CHARS = 2_400_000;
+const SONG_MAX_CHARS = 4_700_000;
+
+let state = {
+  ready: false,
+  usernames: [],
+  users: {},
+  invites: {},
+  admins: [],
+  currentUser: null,
+  view: 'gate',
+  viewingUser: null,
+  authTab: 'login',
+  error: '',
+  editDraft: null,
+  player: { username: null, idx: null }
+};
+
+function isAdmin(username) { return state.admins.includes(username); }
+function getToken() { return localStorage.getItem('members_token'); }
+function setToken(t) { localStorage.pushItem('members_token', t); }
+function clearToken() { localStorage.removeItem('members_token'); }
+
+const audioEl = document.getElementById('audio-el');
+
+// ---------- API HELPERS ----------
+async function api(method, endpoint, body) {
+  const opts = {
+    method,
+    headers: { 'Content-Type': 'application/json' }
+  };
+  const token = getToken();
+  if (token) opts.headers['Authorization'] = 'Bearer ' + token;
+  if (body) opts.body = JSON.stringify(body);
+  
+  const res = await fetch(API_URL + endpoint, opts);
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || 'Request failed');
+  return data;
+}
+
+async function loadInitial() {
+  try {
+    const [{ usernames }, { admins }] = await Promise.all([
+      api('GET', '/api/usernames'),
+      api('GET', '/api/admins')
+    ]);
+    state.usernames = usernames;
+    state.admins = admins;
+    
+    // Try auto-login from token
+    const token = getToken();
+    if (token && state.usernames.includes(token)) {
+      state.currentUser = token;
+      const profile = await api('GET', '/api/profile/' + token);
+      state.users[token] = profile;
+    }
+  } catch (e) {
+    console.error('Startup error:', e);
+    state.loadError = 'Cannot connect to server. Make sure it is running.';
+  }
+  state.ready = true;
+  render();
+}
+
+// ---------- AUTH ----------
+async function doLogin() {
+  const username = document.getElementById('li-username').value.trim();
+  const password = document.getElementById('li-password').value;
+  if (!username || !password) { state.error = 'Enter your username and password.'; render(); return; }
+
+  try {
+    const data = await api('POST', '/api/login', { username, password });
+    setToken(data.token);
+    state.currentUser = username;
+    state.users[username] = data.profile;
+    go('profile', { viewingUser: username, error: '' });
+  } catch (e) {
+    state.error = e.message || 'Login failed';
+    render();
+  }
+}
+
+async function doRegister() {
+  const isFirstEver = state.usernames.length === 0;
+  const codeEl = document.getElementById('ri-code');
+  const code = codeEl ? codeEl.value.trim().toUpperCase() : '';
+  const username = document.getElementById('ri-username').value.trim();
+  const password = document.getElementById('ri-password').value;
+
+  if ((!isFirstEver && !code) || !username || !password) { state.error = 'Fill in every field to continue.'; render(); return; }
+  if (!/^[a-zA-Z0-9_\-]{2,24}$/.test(username)) { state.error = 'Usernames can only use letters, numbers, - and _.'; render(); return; }
+
+  try {
+    const data = await api('POST', '/api/register', { username, password, inviteCode: code });
+    setToken(data.token);
+    state.usernames.push(username);
+    state.currentUser = username;
+    state.users[username] = data.profile;
+    go('profile', { viewingUser: username, error: '' });
+  } catch (e) {
+    state.error = e.message || 'Registration failed';
+    render();
+  }
+}
+
+function doLogout() {
+  audioEl.pause();
+  clearToken();
+  state.player = { username: null, idx: null };
+  state.currentUser = null;
+  state.view = 'gate';
+  state.authTab = 'login';
+  state.error = '';
+  updatePlayerBar();
+  render();
+}
+
+// ---------- PROFILE ----------
+async function loadProfile(username) {
+  try {
+    const profile = await api('GET', '/api/profile/' + username);
+    state.users[username] = profile;
+    return profile;
+  } catch (e) {
+    return null;
+  }
+}
+
+async function ensureDirectoryLoaded() {
+  const missing = state.usernames.filter(n => !state.users[n]);
+  if (missing.length) await Promise.all(missing.map(loadProfile));
+}
+
+async function saveProfile(username, profile) {
+  await api('PUT', '/api/profile', profile);
+  state.users[username] = profile;
+}
+
+// ---------- ADMIN ----------
+async function loadInvites() {
+  const data = await api('GET', '/api/invites');
+  state.invites = data.invites;
+}
+
+async function generateInvite() {
+  await api('POST', '/api/invites');
+  await loadInvites();
+  flash('Invite generated');
+  render();
+}
+
+async function toggleAdmin(username) {
+  try {
+    await api('POST', '/api/admins/' + username);
+    const { admins } = await api('GET', '/api/admins');
+    state.admins = admins;
+    flash('Admin status updated');
+    render();
+  } catch (e) {
+    state.error = e.message;
+    render();
+  }
+}
+
+// ---------- UI HELPERS ----------
+function flash(msg) {
+  const f = document.getElementById('flash');
+  f.textContent = msg;
+  f.classList.add('show');
+  setTimeout(() => f.classList.remove('show'), 1600);
+}
+
+function initials(name) { return (name || '?').slice(0, 2).toUpperCase(); }
+function esc(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+function fmtKB(chars) { return Math.round((chars * 0.75) / 1024) + 'KB'; }
+
+function go(view, payload) {
+  state.view = view;
+  state.error = '';
+  if (payload) Object.assign(state, payload);
+  render();
+}
+
+// ---------- RENDER ----------
+async function render() {
+  const app = document.getElementById('app');
+  if (!state.ready) { app.innerHTML = '<p class="muted" style="margin-top:60px;text-align:center;">Loading…</p>'; return; }
+  
+  const banner = state.loadError ? `<div class="error" style="margin-top:24px;">${esc(state.loadError)}</div>` : '';
+  
+  if (!state.currentUser) {
+    app.innerHTML = renderGate();
+    app.insertAdjacentHTML('afterbegin', banner);
+    bindGate();
+    return;
+  }
+
+  if (state.view === 'admin') {
+    if (!isAdmin(state.currentUser)) { state.view = 'directory'; }
+    else {
+      app.innerHTML = topbar() + '<p class="muted" style="margin-top:20px;">Loading…</p>';
+      await Promise.all([ensureDirectoryLoaded(), loadInvites()]);
+      if (state.view !== 'admin') return;
+      app.innerHTML = topbar() + renderAdmin();
+      bindCommon(); bindAdmin();
+      return;
+    }
+  }
+
+  if (state.view === 'directory') {
+    app.innerHTML = topbar() + '<p class="muted" style="margin-top:20px;">Loading members…</p>';
+    await ensureDirectoryLoaded();
+    if (state.view !== 'directory') return;
+    app.innerHTML = topbar() + renderDirectory();
+    bindCommon(); bindDirectory();
+    return;
+  }
+
+  if (state.view === 'edit') { app.innerHTML = topbar() + renderEdit(); bindCommon(); bindEdit(); return; }
+  
+  if (state.view === 'profile') {
+    if (!state.users[state.viewingUser]) await loadProfile(state.viewingUser);
+    app.innerHTML = topbar() + renderProfile(state.viewingUser);
+    bindCommon(); bindProfile();
+    return;
+  }
+
+  app.innerHTML = renderGate(); bindGate();
+}
+
+function topbar() {
+  return `
+  <div class="topbar">
+    <div class="brand">members</div>
+    <div class="nav-links">
+      <a id="nav-directory" class="${state.view === 'directory' ? 'active' : ''}">Directory</a>
+      ${isAdmin(state.currentUser) ? `<a id="nav-admin" class="${state.view === 'admin' ? 'active' : ''}">Admin</a>` : ''}
+      <a id="nav-profile-self" class="${state.view === 'profile' && state.viewingUser === state.currentUser ? 'active' : ''}">My Profile</a>
+      <a id="nav-logout">Sign out</a>
+    </div>
+  </div>`;
+}
+
+function bindCommon() {
+  document.getElementById('nav-directory').onclick = () => go('directory');
+  const adminNav = document.getElementById('nav-admin');
+  if (adminNav) adminNav.onclick = () => go('admin');
+  document.getElementById('nav-profile-self').onclick = () => go('profile', { viewingUser: state.currentUser });
+  document.getElementById('nav-logout').onclick = doLogout;
+}
+
+// ---------- RENDER FUNCTIONS (same HTML structure) ----------
+function renderGate() {
+  const isLogin = state.authTab === 'login';
+  return `
+  <div style="text-align:center;">
+    <span class="eyebrow">Invite Only</span>
+    <h1 style="font-size:28px;">members</h1>
+    <p class="muted" style="font-size:13px; margin-top:6px;">A small, quiet corner. Profile, links, and a few songs.</p>
+  </div>
+  <div class="ticket">
+    <div class="ticket-head">
+      <div class="tabs">
+        <button class="tab ${isLogin ? 'active' : ''}" id="tab-login" type="button">Sign in</button>
+        <button class="tab ${!isLogin ? 'active' : ''}" id="tab-register" type="button">Register</button>
+      </div>
+    </div>
+    <div class="ticket-perf"></div>
+    <div class="ticket-body">
+      ${isLogin ? `
+        <label for="li-username">Username</label>
+        <input type="text" id="li-username" autocomplete="username">
+        <label for="li-password">Password</label>
+        <input type="password" id="li-password" autocomplete="current-password">
+        <button class="primary" id="btn-login">Enter</button>
+      ` : `
+        ${state.usernames.length > 0 ? `
+        <label for="ri-code">Invite code</label>
+        <input type="text" id="ri-code" class="invite-code-input" placeholder="XXXX-XXXX">
+        ` : `<p class="hint" style="font-size:12px;margin-bottom:4px;">No members yet — set up the first account and it becomes the admin.</p>`}
+        <label for="ri-username">Username</label>
+        <input type="text" id="ri-username" autocomplete="username">
+        <label for="ri-password">Password</label>
+        <input type="password" id="ri-password" autocomplete="new-password">
+        <button class="primary" id="btn-register">${state.usernames.length > 0 ? 'Claim invite & join' : 'Create admin account'}</button>
+      `}
+      ${state.error ? `<div class="error">${esc(state.error)}</div>` : ''}
+    </div>
+  </div>`;
+}
+
+function renderDirectory() {
+  const names = state.usernames;
+  if (names.length === 0) {
+    return `<span class="eyebrow">Directory</span><h2 style="margin-bottom:20px;">Members</h2><p class="empty">No one's here yet.</p>`;
+  }
+  const rows = names.map(name => {
+    const u = state.users[name] || {};
+    const av = u.avatar ? `<img class="avatar" src="${esc(u.avatar)}" alt="">` : `<div class="avatar">${initials(name)}</div>`;
+    return `
+    <div class="member-row" data-user="${esc(name)}">
+      ${av}
+      <div>
+        <div class="member-name">${esc(name)}${name === state.currentUser ? '<span class="you-badge">you</span>' : ''}</div>
+        <div class="member-bio-preview">${esc(u.bio || 'No bio yet')}</div>
+      </div>
+    </div>`;
+  }).join('');
+  return `<span class="eyebrow">Directory</span><h2 style="margin-bottom:8px;">Members</h2><div>${rows}</div>`;
+}
+
+function renderProfile(name) {
+  const u = state.users[name];
+  if (!u) return `<p class="empty">Member not found.</p>`;
+  const isSelf = name === state.currentUser;
+  const av = u.avatar ? `<img class="card-avatar" src="${esc(u.avatar)}" alt="">` : `<div class="card-avatar">${initials(name)}</div>`;
+  const socials = (u.socials || []).filter(s => s.url).map(s => `<a class="social-tag" href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.label || s.url)}</a>`).join('');
+  const songs = u.songs || [];
+  const playingIdx = (state.player.username === name) ? state.player.idx : null;
+  const tracks = songs.length ? songs.map((s, i) => `
+    <div class="track ${playingIdx === i ? 'playing' : ''}" data-idx="${i}">
+      <span class="track-num">${String(i + 1).padStart(2, '0')}</span>
+      <span class="track-title">${esc(s.title || 'Untitled')}</span>
+      <span class="track-icon">${playingIdx === i && !audioEl.paused ? '▶' : '·'}</span>
+    </div>`).join('') : `<p class="empty">No songs added.</p>`;
+
+  return `
+  <div class="back-link" id="back-to-directory">← Directory</div>
+  <div class="card">
+    ${av}
+    <h2>${esc(name)}${isSelf ? '<span class="you-badge">you</span>' : ''}</h2>
+    <div class="bio">${esc(u.bio || 'No bio yet.')}</div>
+    ${socials ? `<div class="socials">${socials}</div>` : ''}
+    <div class="divider"></div>
+    <div class="player-label"><span>Playlist</span><span>${songs.length} track${songs.length === 1 ? '' : 's'}</span></div>
+    ${tracks}
+    ${isSelf ? `<button class="ghost" id="btn-edit-profile" style="margin-top:22px;">Edit profile</button>` : ''}
+  </div>`;
+}
+
+function renderAdmin() {
+  const allInvites = Object.entries(state.invites).sort((a, b) => (b[1].createdAt || '').localeCompare(a[1].createdAt || ''));
+  const inviteRows = allInvites.length ? allInvites.map(([code, inv]) => `
+    <div class="invite-card">
+      <div>
+        <span class="invite-code">${esc(code)}</span>
+        <button class="copy-btn" data-copy="${esc(code)}" title="Copy code">⧉</button>
+      </div>
+      <span class="invite-status ${inv.used ? 'used' : 'unused'}">${inv.used ? ('claimed' + (inv.usedBy ? ' · ' + esc(inv.usedBy) : '')) : 'unclaimed'}</span>
+    </div>`).join('') : `<p class="empty">No invite codes generated yet.</p>`;
+
+  const memberRows = state.usernames.map(name => {
+    const admin = isAdmin(name);
+    const isSelf = name === state.currentUser;
+    const lastAdminLockout = admin && state.admins.length === 1;
+    return `
+    <div class="invite-card">
+      <div>
+        <span class="invite-code" style="font-family:'Inter',sans-serif;">${esc(name)}</span>
+        ${admin ? `<span class="invite-status unused" style="margin-left:8px;">admin</span>` : ''}
+      </div>
+      <button class="ghost" style="width:auto; margin:0; padding:6px 12px; font-size:10px;"
+        data-toggle-admin="${esc(name)}" ${lastAdminLockout ? 'disabled title="At least one admin is required"' : ''}>
+        ${admin ? 'Remove admin' : 'Make admin'}
+      </button>
+    </div>`;
+  }).join('');
+
+  return `
+  <span class="eyebrow">Admin</span>
+  <h2 style="margin-bottom:8px;">Control panel</h2>
+  <p class="muted" style="font-size:13px;">Generate invite codes and manage members. Only admins can see this page.</p>
+
+  <h3 style="font-size:15px; margin-top:28px;">Invite codes</h3>
+  <button class="primary" id="btn-generate-invite" style="margin-top:12px;">Generate invite code</button>
+  <div style="margin-top:8px;">${inviteRows}</div>
+
+  <div class="divider"></div>
+
+  <h3 style="font-size:15px;">Registered members <span class="muted" style="font-weight:400; font-size:12px;">(${state.usernames.length})</span></h3>
+  <button class="ghost" id="btn-download-csv" style="margin-top:12px;">Download member list (.csv)</button>
+  <div style="margin-top:8px;">${memberRows || `<p class="empty">No members yet.</p>`}</div>
+  ${state.error ? `<div class="error">${esc(state.error)}</div>` : ''}`;
+}
+
+function renderEdit() {
+  const d = state.editDraft;
+  const socials = d.socials.length ? d.socials : [{ label: '', url: '' }];
+  const songs = d.songs.length ? d.songs : [{ title: '', url: '' }];
+
+  const avatarPreview = d.avatar
+    ? `<img class="avatar-edit-preview" src="${esc(d.avatar)}" alt="">`
+    : `<div class="avatar-edit-preview">${initials(state.currentUser)}</div>`;
+  const isDataAvatar = d.avatar && d.avatar.startsWith('data:');
+
+  const socialRows = socials.map((s, i) => `
+    <div class="row-group" data-social-row="${i}">
+      <input type="text" placeholder="Label (e.g. Instagram)" class="s-label" data-i="${i}" value="${esc(s.label)}">
+      <input type="text" placeholder="https://…" class="s-url" data-i="${i}" value="${esc(s.url)}">
+      <button class="row-remove" data-remove-social="${i}" type="button">✕</button>
+    </div>`).join('');
+
+  const songRows = songs.map((s, i) => {
+    const isData = s.url && s.url.startsWith('data:');
+    return `
+    <div class="row-group" data-song-row="${i}" style="flex-direction:column; border:1px solid var(--line); padding:12px; border-radius:3px; margin-top:10px;">
+      <input type="text" placeholder="Song title" class="t-title" data-i="${i}" value="${esc(s.title)}" style="margin-bottom:8px;">
+      <div style="display:flex; gap:8px; width:100%;">
+        <input type="text" placeholder="Audio URL…" class="t-url" data-i="${i}" value="${isData ? '' : esc(s.url)}" ${isData ? 'disabled' : ''}>
+        <label class="upload-btn">Upload<input type="file" class="t-file" data-i="${i}" accept="audio/*" hidden></label>
+        <button class="row-remove" data-remove-song="${i}" type="button">✕</button>
+      </div>
+      ${isData ? `<p class="hint">Custom audio uploaded (${fmtKB(s.url.length)}). <a href="#" data-clear-song="${i}" style="color:var(--accent);">Remove & paste a URL instead</a></p>` : `<p class="hint">Paste a direct .mp3/.wav link, or upload a short clip (~3MB max).</p>`}
+    </div>`;
+  }).join('');
+
+  return `
+  <div class="back-link" id="back-to-profile">← Back to profile</div>
+  <span class="eyebrow">Edit</span>
+  <h2 style="margin-bottom:18px;">Your profile</h2>
+  <div class="card">
+    <label>Profile picture</label>
+    <div class="avatar-edit-row">
+      ${avatarPreview}
+      <div style="flex:1;">
+        <input type="text" id="e-avatar-url" placeholder="Paste an image URL…" value="${isDataAvatar ? '' : esc(d.avatar || '')}" ${isDataAvatar ? 'disabled' : ''}>
+        <div style="display:flex; gap:8px; margin-top:8px; align-items:center;">
+          <label class="upload-btn">Upload image<input type="file" id="e-avatar-file" accept="image/*" hidden></label>
+          ${d.avatar ? `<button type="button" class="row-remove" id="e-avatar-clear" style="width:auto;padding:0 12px;">Remove</button>` : ''}
+        </div>
+        ${isDataAvatar ? `<p class="hint">Custom image uploaded (${fmtKB(d.avatar.length)}).</p>` : `<p class="hint">~1.5MB max for uploads. Larger photos: paste a hosted image URL instead.</p>`}
+      </div>
+    </div>
+
+    <label for="e-bio">Bio</label>
+    <textarea id="e-bio" placeholder="A line or two about you">${esc(d.bio)}</textarea>
+
+    <label>Social links</label>
+    <div id="social-rows">${socialRows}</div>
+    <button class="add-link" id="add-social" type="button">+ Add link</button>
+
+    <label style="margin-top:24px;">Songs</label>
+    <div id="song-rows">${songRows}</div>
+    <button class="add-link" id="add-song" type="button">+ Add song</button>
+
+    <button class="primary" id="btn-save-profile">Save changes</button>
+    ${state.error ? `<div class="error">${esc(state.error)}</div>` : ''}
+  </div>`;
+}
+
+// ---------- BINDERS ----------
+function bindGate() {
+  document.getElementById('tab-login').onclick = () => go('gate', { authTab: 'login' });
+  document.getElementById('tab-register').onclick = () => go('gate', { authTab: 'register' });
+  if (state.authTab === 'login') {
+    document.getElementById('btn-login').onclick = doLogin;
+    document.getElementById('li-password').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+  } else {
+    document.getElementById('btn-register').onclick = doRegister;
+    document.getElementById('ri-password').addEventListener('keydown', e => { if (e.key === 'Enter') doRegister(); });
+  }
+}
+
+function bindDirectory() {
+  document.querySelectorAll('.member-row').forEach(row => {
+    row.onclick = () => go('profile', { viewingUser: row.dataset.user });
+  });
+}
+
+function bindProfile() {
+  document.getElementById('back-to-directory').onclick = () => go('directory');
+  const editBtn = document.getElementById('btn-edit-profile');
+  if (editBtn) editBtn.onclick = () => {
+    state.editDraft = JSON.parse(JSON.stringify(state.users[state.currentUser]));
+    go('edit');
+  };
+  document.querySelectorAll('.track').forEach(t => {
+    t.onclick = () => playTrack(state.viewingUser, parseInt(t.dataset.idx, 10));
+  });
+}
+
+function bindAdmin() {
+  document.getElementById('btn-generate-invite').onclick = generateInvite;
+  document.getElementById('btn-download-csv').onclick = downloadMembersCSV;
+  document.querySelectorAll('[data-copy]').forEach(b => {
+    b.onclick = async () => {
+      try { await navigator.clipboard.writeText(b.dataset.copy); flash('Code copied'); }
+      catch (e) { flash(b.dataset.copy); }
+    };
+  });
+  document.querySelectorAll('[data-toggle-admin]').forEach(b => {
+    b.onclick = () => toggleAdmin(b.dataset.toggleAdmin);
+  });
+}
+
+function bindEdit() {
+  document.getElementById('back-to-profile').onclick = () => go('profile', { viewingUser: state.currentUser });
+
+  document.getElementById('e-bio').oninput = e => { state.editDraft.bio = e.target.value; };
+
+  const avatarUrlInput = document.getElementById('e-avatar-url');
+  if (avatarUrlInput) {
+    avatarUrlInput.oninput = e => { state.editDraft.avatar = e.target.value; };
+  }
+  document.getElementById('e-avatar-file').onchange = e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { state.error = 'Please choose an image file.'; render(); return; }
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (reader.result.length > AVATAR_MAX_CHARS) {
+        state.error = 'That image is too large (~' + fmtKB(reader.result.length) + '). Try something under ~1.5MB, or paste an image URL instead.';
+        render(); return;
+      }
+      state.editDraft.avatar = reader.result;
+      state.error = '';
+      render();
+    };
+    reader.readAsDataURL(file);
+  };
+  const clearAvatar = document.getElementById('e-avatar-clear');
+  if (clearAvatar) clearAvatar.onclick = () => { state.editDraft.avatar = ''; render(); };
+
+  document.getElementById('add-social').onclick = () => { state.editDraft.socials.push({ label: '', url: '' }); render(); };
+  document.getElementById('add-song').onclick = () => { state.editDraft.songs.push({ title: '', url: '' }); render(); };
+
+  document.querySelectorAll('.s-label').forEach(el => el.oninput = e => { state.editDraft.socials[+e.target.dataset.i].label = e.target.value; });
+  document.querySelectorAll('.s-url').forEach(el => el.oninput = e => { state.editDraft.socials[+e.target.dataset.i].url = e.target.value; });
+  document.querySelectorAll('[data-remove-social]').forEach(b => {
+    b.onclick = () => { state.editDraft.socials.splice(+b.dataset.removeSocial, 1); render(); };
+  });
+
+  document.querySelectorAll('.t-title').forEach(el => el.oninput = e => { state.editDraft.songs[+e.target.dataset.i].title = e.target.value; });
+  document.querySelectorAll('.t-url').forEach(el => el.oninput = e => { state.editDraft.songs[+e.target.dataset.i].url = e.target.value; });
+  document.querySelectorAll('.t-file').forEach(el => {
+    el.onchange = e => {
+      const i = +e.target.dataset.i;
+      const file = e.target.files[0];
+      if (!file) return;
+      if (!file.type.startsWith('audio/')) { state.error = 'Please choose an audio file.'; render(); return; }
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (reader.result.length > SONG_MAX_CHARS) {
+          state.error = 'That audio file is too large (~' + fmtKB(reader.result.length) + '). Try a shorter clip (~3MB max), or paste a direct audio URL instead.';
+          render(); return;
+        }
+        state.editDraft.songs[i].url = reader.result;
+        state.error = '';
+        render();
+      };
+      reader.readAsDataURL(file);
+    };
+  });
+  document.querySelectorAll('[data-remove-song]').forEach(b => {
+    b.onclick = () => { state.editDraft.songs.splice(+b.dataset.removeSong, 1); render(); };
+  });
+  document.querySelectorAll('[data-clear-song]').forEach(a => {
+    a.onclick = e => { e.preventDefault(); state.editDraft.songs[+a.dataset.clearSong].url = ''; render(); };
+  });
+
+  document.getElementById('btn-save-profile').onclick = saveProfileEdits;
+}
+
+async function saveProfileEdits() {
+  const d = state.editDraft;
+  d.socials = d.socials.filter(s => s.label.trim() || s.url.trim()).map(s => ({ label: s.label.trim(), url: s.url.trim() }));
+  d.songs = d.songs.filter(s => s.title.trim() || s.url.trim()).map(s => ({ title: s.title.trim(), url: s.url.trim() }));
+  d.bio = d.bio.trim();
+  d.avatar = (d.avatar || '').trim();
+  try {
+    await saveProfile(state.currentUser, d);
+    flash('Saved');
+    go('profile', { viewingUser: state.currentUser });
+  } catch (e) {
+    state.error = 'Could not save right now — try again.';
+    render();
+  }
+}
+
+function downloadMembersCSV() {
+  const header = 'username,joined,is_admin,bio\n';
+  const rows = state.usernames.map(name => {
+    const u = state.users[name] || {};
+    const safe = (v) => '"' + String(v || '').replace(/"/g, '""') + '"';
+    return [safe(name), safe(u.joined || ''), isAdmin(name) ? 'yes' : 'no', safe(u.bio || '')].join(',');
+  });
+  const csv = header + rows.join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'members-' + new Date().toISOString().slice(0, 10) + '.csv';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+// ---------- PLAYER ----------
+function currentPlaylist() {
+  const u = state.users[state.player.username];
+  return u ? (u.songs || []) : [];
+}
+
+function playTrack(username, idx) {
+  const u = state.users[username];
+  if (!u || !u.songs || !u.songs[idx] || !u.songs[idx].url) return;
+  const sameTrack = state.player.username === username && state.player.idx === idx;
+  if (sameTrack) {
+    if (audioEl.paused) audioEl.play(); else audioEl.pause();
+  } else {
+    state.player.username = username;
+    state.player.idx = idx;
+    audioEl.src = u.songs[idx].url;
+    audioEl.play().catch(() => { });
+  }
+  updatePlayerBar();
+  refreshTrackHighlighting();
+}
+
+function stepTrack(delta) {
+  if (state.player.username == null) return;
+  const list = currentPlaylist();
+  if (!list.length) return;
+  let next = state.player.idx + delta;
+  if (next < 0) next = list.length - 1;
+  if (next >= list.length) next = 0;
+  playTrack(state.player.username, next);
+}
+
+function closePlayer() {
+  audioEl.pause();
+  audioEl.removeAttribute('src');
+  state.player = { username: null, idx: null };
+  updatePlayerBar();
+  refreshTrackHighlighting();
+}
+
+function refreshTrackHighlighting() {
+  if (state.view !== 'profile') return;
+  document.querySelectorAll('.track').forEach(t => {
+    const idx = parseInt(t.dataset.idx, 10);
+    const isPlaying = state.player.username === state.viewingUser && state.player.idx === idx;
+    t.classList.toggle('playing', isPlaying);
+    const icon = t.querySelector('.track-icon');
+    if (icon) icon.textContent = (isPlaying && !audioEl.paused) ? '▶' : '·';
+  });
+}
+
+function updatePlayerBar() {
+  const bar = document.getElementById('player-bar');
+  const titleEl = document.getElementById('player-track-title');
+  const ownerEl = document.getElementById('player-track-owner');
+  const toggleBtn = document.getElementById('player-toggle');
+  if (state.player.username == null) {
+    bar.classList.remove('active');
+    return;
+  }
+  const u = state.users[state.player.username];
+  const song = u && u.songs && u.songs[state.player.idx];
+  bar.classList.add('active');
+  titleEl.textContent = song ? (song.title || 'Untitled') : '—';
+  ownerEl.textContent = state.player.username;
+  toggleBtn.textContent = audioEl.paused ? '▶' : '⏸';
+}
+
+document.getElementById('player-toggle').onclick = () => {
+  if (audioEl.paused) audioEl.play(); else audioEl.pause();
+};
+document.getElementById('player-prev').onclick = () => stepTrack(-1);
+document.getElementById('player-next').onclick = () => stepTrack(1);
+document.getElementById('player-close').onclick = closePlayer;
+
+audioEl.addEventListener('play', () => { updatePlayerBar(); refreshTrackHighlighting(); });
+audioEl.addEventListener('pause', () => { updatePlayerBar(); refreshTrackHighlighting(); });
+audioEl.addEventListener('ended', () => stepTrack(1));
+audioEl.addEventListener('timeupdate', () => {
+  const fill = document.getElementById('player-progress-fill');
+  if (audioEl.duration) { fill.style.width = ((audioEl.currentTime / audioEl.duration) * 100) + '%'; }
+});
+
+loadInitial();
+</script>
+</body>
+</html>

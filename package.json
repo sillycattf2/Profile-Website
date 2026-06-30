@@ -1,17 +1,17 @@
-{
-  "name": "members-app",
-  "version": "1.0.0",
-  "description": "A small, quiet corner. Profile, links, and a few songs.",
-  "main": "server.js",
-  "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js"
-  },
-  "dependencies": {
-    "express": "^4.18.2",
-    "sqlite3": "^5.1.6"
-  },
-  "engines": {
-    "node": ">=18.0.0"
-  }
-}
+app = 'members-app'
+primary_region = 'iad'
+
+[build]
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = 'stop'
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ['app']
+
+[[vm]]
+  memory = '512mb'
+  cpu_kind = 'shared'
+  cpus = 1
