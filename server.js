@@ -9,7 +9,14 @@ const DB_PATH = path.join(__dirname, 'members.db');
 
 // Middleware
 app.use(express.json({ limit: '50mb' }));
-app.use(express.static('public'));
+
+// Healthcheck endpoint (must be BEFORE static middleware for Railway)
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// API routes (must be BEFORE static middleware)
+// ... all API routes will be added here ...
 
 // Initialize SQLite database
 const db = new sqlite3.Database(DB_PATH);
@@ -117,12 +124,10 @@ app.post('/api/login', async (req, res) => {
 app.post('/api/register', async (req, res) => {
   const { username, password, inviteCode } = req.body;
 
-  // Check username format
   if (!/^[a-zA-Z0-9_\-]{2,24}$/.test(username)) {
     return res.status(400).json({ error: 'Invalid username format' });
   }
 
-  // Check if first user
   const count = await new Promise((resolve, reject) => {
     db.get('SELECT COUNT(*) as count FROM users', [], (err, row) => {
       if (err) reject(err);
@@ -133,7 +138,6 @@ app.post('/api/register', async (req, res) => {
   const isFirst = count === 0;
 
   if (!isFirst) {
-    // Validate invite code
     const invite = await new Promise((resolve, reject) => {
       db.get('SELECT * FROM invites WHERE code = ? AND used = 0', [inviteCode], (err, row) => {
         if (err) reject(err);
@@ -141,12 +145,9 @@ app.post('/api/register', async (req, res) => {
       });
     });
     if (!invite) return res.status(400).json({ error: 'Invalid or used invite code' });
-
-    // Mark invite as used
     db.run('UPDATE invites SET used = 1, usedBy = ? WHERE code = ?', [username, inviteCode]);
   }
 
-  // Check if username exists
   const existing = await new Promise((resolve, reject) => {
     db.get('SELECT username FROM users WHERE username = ?', [username], (err, row) => {
       if (err) reject(err);
@@ -155,7 +156,6 @@ app.post('/api/register', async (req, res) => {
   });
   if (existing) return res.status(400).json({ error: 'Username taken' });
 
-  // Create user
   const salt = randomSalt();
   const hash = await hashPassword(password, salt);
   const joined = new Date().toISOString();
@@ -165,12 +165,9 @@ app.post('/api/register', async (req, res) => {
     [username, hash, salt, '', '', '[]', '[]', joined],
     function(err) {
       if (err) return res.status(500).json({ error: err.message });
-
-      // Make first user admin
       if (isFirst) {
         db.run('INSERT INTO admins (username) VALUES (?)', [username]);
       }
-
       res.json({ 
         token: username,
         profile: { username, avatar: '', bio: '', socials: [], songs: [], joined }
@@ -239,14 +236,12 @@ app.post('/api/admins/:username', requireAuth, requireAdmin, (req, res) => {
 
     db.get('SELECT username FROM admins WHERE username = ?', [target], (err, adminRow) => {
       if (adminRow) {
-        // Remove admin
         if (row.count <= 1) return res.status(400).json({ error: 'At least one admin required' });
         db.run('DELETE FROM admins WHERE username = ?', [target], function(err) {
           if (err) return res.status(500).json({ error: err.message });
           res.json({ admin: false });
         });
       } else {
-        // Add admin
         db.run('INSERT INTO admins (username) VALUES (?)', [target], function(err) {
           if (err) return res.status(500).json({ error: err.message });
           res.json({ admin: true });
@@ -264,6 +259,14 @@ app.get('/api/members', requireAuth, requireAdmin, (req, res) => {
   });
 });
 
+// Static files (MUST be after API routes)
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Fallback: serve index.html for any non-API route (SPA support)
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
